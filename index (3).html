@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>即梦短视频脚本生成器 | 商家版</title>
+<style>
+  :root{ --tt-black:#000; --tt-red:#FE2C55; --tt-cyan:#25F4EE; --bg:#f4f4f5; --card:#fff; --line:#ececec; --txt:#161823; --sub:#8a8b91; }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--txt);}
+
+  /* ===== Top hero ===== */
+  .hero{background:linear-gradient(135deg,#161823 0%,#2a0a14 100%);color:#fff;padding:30px 16px 26px;}
+  .hero .inner{max-width:880px;margin:0 auto;display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+  .logo{width:46px;height:46px;border-radius:12px;background:var(--tt-black);position:relative;flex:none;box-shadow:0 0 0 2px rgba(255,255,255,.08);}
+  .logo::before{content:"\266A";color:var(--tt-cyan);position:absolute;font-size:28px;left:10px;top:5px;text-shadow:2.5px 0 var(--tt-red);}
+  .hero h1{font-size:22px;font-weight:800;letter-spacing:-.3px;}
+  .hero .tag{font-size:12px;color:#fff;background:var(--tt-red);padding:3px 10px;border-radius:20px;font-weight:700;}
+  .hero p{font-size:13px;color:#c9c9cf;margin:10px 0 0;width:100%;line-height:1.6;}
+
+  /* ===== App body ===== */
+  #app{padding:24px 16px 110px;}
+  .wrap{max-width:880px;margin:0 auto;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.04);}
+  .sec-title{font-size:15px;font-weight:800;margin-bottom:4px;display:flex;align-items:center;gap:8px;}
+  .sec-title .n{width:22px;height:22px;border-radius:50%;background:var(--tt-black);color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;font-weight:700;flex:none;}
+  .sec-title .req{color:var(--tt-red);font-size:12px;}
+  .sec-title .opt{color:var(--sub);font-size:12px;font-weight:500;}
+  .sec-desc{font-size:12px;color:var(--sub);margin:0 0 14px 30px;line-height:1.5;}
+
+  input,select,textarea{font-family:inherit;font-size:13px;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;outline:none;width:100%;background:#fff;color:var(--txt);}
+  input:focus,select:focus,textarea:focus{border-color:var(--tt-black);}
+  textarea{resize:vertical;min-height:64px;line-height:1.5;}
+  .lbl{font-size:12px;color:var(--sub);margin-bottom:5px;font-weight:600;}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  @media(max-width:560px){.row{grid-template-columns:1fr;}}
+  .field{margin-bottom:12px;}
+  .field:last-child{margin-bottom:0;}
+
+  .cat-wrap{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+  .cat-wrap input{flex:1;min-width:200px;}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+  .chip{padding:6px 12px;border-radius:18px;background:#f0f0f1;font-size:12px;cursor:pointer;border:1.5px solid transparent;user-select:none;font-weight:600;}
+  .chip:hover{border-color:#ccc;}
+  .chip.sel{background:var(--tt-black);color:#fff;}
+
+  .opt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;}
+  .opt{border:1.5px solid var(--line);border-radius:12px;padding:11px 12px;cursor:pointer;transition:.15s;background:#fff;}
+  .opt:hover{border-color:#ccc;transform:translateY(-1px);}
+  .opt.sel{border-color:var(--tt-red);background:#fff4f6;box-shadow:0 0 0 3px rgba(254,44,85,.08);}
+  .opt .t{font-weight:700;font-size:13px;}
+  .opt .d{font-size:11px;color:var(--sub);margin-top:3px;line-height:1.35;}
+
+  .num-pick{display:flex;gap:6px;flex-wrap:wrap;}
+  .num{min-width:42px;height:38px;padding:0 10px;border-radius:10px;border:1.5px solid var(--line);display:flex;align-items:center;justify-content:center;font-weight:700;cursor:pointer;font-size:13px;background:#fff;}
+  .num.sel{background:var(--tt-black);color:#fff;border-color:var(--tt-black);}
+
+  /* ===== Generate bar ===== */
+  .gen-bar{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);padding:14px 16px;display:flex;justify-content:center;gap:12px;z-index:50;box-shadow:0 -2px 12px rgba(0,0,0,.05);}
+  .btn{padding:13px 30px;border-radius:30px;border:none;font-size:15px;font-weight:800;cursor:pointer;}
+  .btn-primary{background:var(--tt-red);color:#fff;} .btn-primary:disabled{background:#f0a8b6;cursor:not-allowed;}
+  .btn-ghost{background:#f0f0f1;color:var(--txt);}
+
+  /* ===== Output ===== */
+  #out{margin-top:4px;}
+  .out-empty{font-size:13px;color:var(--sub);font-style:italic;text-align:center;padding:18px;}
+  .vbox{border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px;background:#fafafa;}
+  .vhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:10px;flex-wrap:wrap;}
+  .vt{font-weight:800;font-size:14px;display:flex;align-items:center;gap:8px;}
+  .vt .badge{background:var(--tt-red);color:#fff;font-size:10px;padding:2px 8px;border-radius:12px;font-weight:700;}
+  .cp{font-size:12px;background:var(--tt-black);color:#fff;border:none;padding:6px 16px;border-radius:16px;cursor:pointer;font-weight:600;}
+  .cp.done{background:#1aab8a;}
+  .vlbl{font-size:11px;color:var(--tt-red);font-weight:800;margin:12px 0 4px;text-transform:uppercase;letter-spacing:.4px;}
+  .vlbl:first-child{margin-top:0;}
+  .vp{font-size:13px;line-height:1.65;background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px 12px;white-space:pre-wrap;}
+  .vp.mono{font-family:"SF Mono",Consolas,monospace;font-size:12px;color:#333;}
+  .foot{text-align:center;font-size:11px;color:#bbb;margin:8px auto 0;max-width:880px;line-height:1.6;}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="inner">
+    <div class="logo"></div>
+    <div>
+      <h1>即梦短视频脚本生成器</h1>
+    </div>
+    <span class="tag">商家版</span>
+    <p>输入商品品类与（选填）拍摄要求，一键生成可直接用于即梦（Dreamina）AI 短视频的全英文生产脚本。免费开放，无需登录。<br><span style="color:var(--tt-cyan);font-weight:600;">注：页面为中文，生成的脚本结果均为英文；你输入的中文（品类 / 人群 / 卖点 / 备注）会自动翻译成英文后写入脚本，脚本中不会出现任何中文。</span></p>
+  </div>
+</div>
+
+<div id="app">
+  <div class="wrap">
+
+    <!-- 1. Category (required) -->
+    <div class="card">
+      <div class="sec-title"><span class="n">1</span> 商品品类 <span class="req">* 必填</span></div>
+      <div class="sec-desc">输入你的商品名称（支持中文或英文），例如「陶瓷咖啡杯」「香薰加湿器」。</div>
+      <div class="cat-wrap">
+        <input id="cat" autocomplete="off" placeholder="例如：香薰加湿器" />
+      </div>
+      <div class="chips" id="catChips"></div>
+    </div>
+
+    <!-- 2. Requirements (optional) -->
+    <div class="card">
+      <div class="sec-title"><span class="n">2</span> 脚本要求 <span class="opt">（选填）</span></div>
+      <div class="sec-desc">任意项留空，生成器会自动选择智能默认值。</div>
+
+      <div class="field">
+        <div class="lbl">视频风格 / 调性</div>
+        <div class="opt-grid" id="styleGrid"></div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <div class="lbl">视频时长</div>
+          <div class="num-pick" id="lenPick"></div>
+        </div>
+        <div class="field">
+          <div class="lbl">画幅比例</div>
+          <div class="num-pick" id="ratioPick"></div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <div class="lbl">目标人群</div>
+          <input id="audience" autocomplete="off" placeholder="例如：年轻上班族、新手妈妈" />
+        </div>
+        <div class="field">
+          <div class="lbl">要强调的卖点 / 钩子</div>
+          <input id="usp" autocomplete="off" placeholder="例如：24 小时留香、环保材质、五折优惠" />
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="lbl">一次生产脚本数量</div>
+        <div class="num-pick" id="cntPick"></div>
+      </div>
+
+      <div class="field">
+        <div class="lbl">给 AI 的额外备注（自由填写）</div>
+        <textarea id="notes" placeholder="例如：必须出现产品特写、要有真人手部出镜、节日主题等。"></textarea>
+      </div>
+    </div>
+
+    <!-- Output -->
+    <div class="card">
+      <div class="sec-title"><span class="n">3</span> 生成的生产脚本（英文）</div>
+      <div class="sec-desc">复制任意脚本块，粘贴到即梦 / Dreamina 即可。每条脚本包含：结构化模板（Hook / 灯光 / 运镜 / 转场等）、逐镜分镜、配音字幕、完整成片提示词、负向约束。结果均为英文，绝无中文。</div>
+      <div id="out"><div class="out-empty">点击下方「生成脚本」后，结果将显示在这里。</div></div>
+    </div>
+
+  </div>
+  <div class="foot">本工具完全在你的浏览器本地运行，不上传任何数据。专为商家在即梦（Dreamina）上制作短视频而打造。</div>
+</div>
+
+<div class="gen-bar">
+  <button class="btn btn-ghost" onclick="resetAll()">重置</button>
+  <button class="btn btn-primary" id="genBtn" onclick="generate()">生成脚本</button>
+</div>
+
+<script>
+/* ============ Data ============ */
+/* 快捷品类：中文显示(cn) / 英文取值(en，用于生成英文脚本) */
+/* 已按需求删除其他类目的预设标签，不展示快捷品类 */
+const CAT_PRESETS = [];
+
+const STYLES = [
+  {k:"ugc",      t:"UGC / 真实感",   d:"真人随手拍、手持质感"},
+  {k:"premium",  t:"高级 / 质感",    d:"电影感、慢节奏、高级光影"},
+  {k:"energetic",t:"快节奏 / 活力",  d:"快切、动感、潮流"},
+  {k:"asmr",     t:"ASMR / 感官",    d:"特写、声音驱动、解压"},
+  {k:"funny",    t:"搞笑 / 情景剧",  d:"幽默、贴近生活、有钩子"},
+  {k:"tutorial", t:"教程 / 演示",    d:"展示用法、分步骤"}
+];
+const STYLE_DESC = {
+  ugc:"authentic UGC handheld style, natural daylight, relatable real-person tone",
+  premium:"cinematic premium look, soft directional lighting, shallow depth of field, elegant slow camera moves",
+  energetic:"high-energy fast-paced edit, punchy quick cuts, vibrant colors, trending music vibe",
+  asmr:"ASMR sensory close-ups, crisp product sounds, slow satisfying motion, macro detail",
+  funny:"light comedic skit tone, relatable everyday scenario, exaggerated reactions",
+  tutorial:"clear step-by-step demonstration, clean framing, instructional pacing"
+};
+
+const LENGTHS = ["9s","15s","21s","30s"];
+const RATIOS  = ["9:16","1:1","16:9"];
+const COUNTS  = [1,2,3,5,8,10];
+
+/* ============ 中文 → 英文 翻译模块 ============ */
+/* 目标：写进脚本的任何文本都不得包含中文。
+   策略：① 常见电商/品类词典直译 ② 词典未命中的中文转拼音(可读且无中文字符) ③ 最终强制净化，剔除一切非 ASCII 字符。 */
+const CN_DICT = {
+  // 品类
+  "咖啡杯":"coffee mug","马克杯":"mug","无线耳机":"wireless earbuds","耳机":"earphones","蓝牙耳机":"bluetooth earbuds",
+  "护肤精华":"skincare serum","精华":"serum","面霜":"face cream","护肤":"skincare","面膜":"face mask","口红":"lipstick",
+  "香薰加湿器":"aromatherapy diffuser","加湿器":"humidifier","香薰":"aromatherapy","瑜伽垫":"yoga mat",
+  "台灯":"desk lamp","灯":"lamp","运动鞋":"sneakers","鞋":"shoes","宠物窝":"pet bed","宠物":"pet",
+  "刀具":"knife set","厨房刀具套装":"kitchen knife set","厨房":"kitchen","手机壳":"phone case","手机":"phone",
+  "水杯":"water bottle","保温杯":"insulated bottle","智能水杯":"smart water bottle","蜡烛":"candle","香薰蜡烛":"scented candle",
+  "背包":"backpack","包":"bag","手表":"watch","智能手表":"smartwatch","键盘":"keyboard","鼠标":"mouse",
+  "玩具":"toy","捏捏乐":"squishy fidget toy","解压玩具":"fidget toy","音箱":"speaker","充电宝":"power bank","数据线":"charging cable",
+  "毛巾":"towel","枕头":"pillow","抱枕":"cushion","床上用品":"bedding","收纳盒":"storage box","花瓶":"vase","摆件":"decor piece",
+  "服装":"clothing","裙子":"dress","T恤":"t-shirt","卫衣":"hoodie","帽子":"hat","袜子":"socks","围巾":"scarf",
+  "玩偶":"plush toy","公仔":"figure","保温杯":"thermos","茶具":"tea set","餐具":"tableware","锅":"cookware",
+  // 人群
+  "年轻上班族":"young office workers","上班族":"office workers","学生":"students","新手妈妈":"new moms","妈妈":"moms",
+  "宝妈":"moms","年轻人":"young people","女性":"women","男性":"men","男士":"men","女士":"women","情侣":"couples",
+  "送礼":"gift shoppers","礼物":"gift","健身人群":"fitness enthusiasts","白领":"white-collar workers","宠物主人":"pet owners",
+  "中年":"middle-aged users","老年人":"seniors","儿童":"kids","青少年":"teens","美妆爱好者":"beauty lovers",
+  // 卖点/常用词
+  "环保材质":"eco-friendly material","环保":"eco-friendly","材质":"material","便携":"portable","耐用":"durable",
+  "高级":"premium","质感":"texture","柔软":"soft","防水":"waterproof","轻便":"lightweight","大容量":"large capacity",
+  "快速充电":"fast charging","续航":"long battery life","静音":"quiet","无线":"wireless","智能":"smart",
+  "五折":"50% off","优惠":"discount","限时优惠":"limited-time offer","买一送一":"buy one get one free","包邮":"free shipping",
+  "留香":"long-lasting scent","24小时留香":"24-hour lasting scent","天然":"natural","纯棉":"pure cotton","不锈钢":"stainless steel",
+  "新品":"new arrival","热销":"best-seller","爆款":"viral best-seller","好评":"highly rated","正品":"authentic",
+  "特写":"close-up","真人":"real person","出镜":"on camera","节日":"festive","节日主题":"festive theme",
+  "必须":"must","展示":"show","产品":"product","手部":"hands","背景":"background","干净":"clean",
+  // 拍摄要求 / 镜头 / 调性
+  "拍摄":"shooting","拍":"shoot","摄":"shoot","拍摄手法":"shooting technique","拍照":"photography",
+  "暖色调":"warm color tone","冷色调":"cool color tone","色调":"color tone","暖光":"warm light","柔光":"soft light",
+  "自然光":"natural light","逆光":"backlight","氛围感":"atmospheric mood","氛围":"mood","治愈":"soothing",
+  "高级感":"premium feel","高端":"high-end","质感画面":"textured visuals","电影感":"cinematic feel","电影":"cinematic",
+  "特写镜头":"close-up shot","近景":"close shot","远景":"wide shot","全景":"wide shot","中景":"medium shot",
+  "微距":"macro","微距镜头":"macro shot","俯拍":"top-down shot","俯视":"top-down view","仰拍":"low-angle shot",
+  "慢动作":"slow motion","慢镜头":"slow-motion shot","快切":"fast cuts","转场":"transition","运镜":"camera movement",
+  "推镜":"push-in","拉镜":"pull-out","环绕":"orbit shot","旋转":"rotating shot","手持":"handheld","稳定":"stable",
+  "真人出镜":"real person on camera","真人手部出镜":"real hands on camera","手部出镜":"hands on camera",
+  "产品特写":"product close-up","开箱":"unboxing","使用场景":"usage scene","对比":"before-and-after",
+  "解压":"satisfying / stress-relief","治愈氛围":"soothing atmosphere","清新":"fresh","简约":"minimalist","ins风":"Instagram aesthetic",
+  "竖屏":"vertical","横屏":"horizontal","字幕":"captions","配音":"voiceover","口播":"voiceover","背景音乐":"background music",
+  "节奏感":"strong rhythm","明亮":"bright","柔和":"soft","真实":"authentic","生活化":"lifestyle","居家":"at home",
+  "送礼场景":"gifting scene","包装精美":"premium packaging","包装":"packaging","性价比":"great value","划算":"great value",
+  "限时折扣":"limited-time discount","促销":"promotion","氛围灯":"ambient light","夜灯":"night light","彩色":"colorful",
+  "细节":"detail","细节展示":"detail showcase","纹理":"texture","光影":"light and shadow","高清":"high definition","真实感":"realistic",
+  // 节日 / 主题 / 元素
+  "万圣节":"Halloween","万圣节元素":"Halloween elements","圣诞节":"Christmas","圣诞":"Christmas","圣诞元素":"Christmas elements",
+  "感恩节":"Thanksgiving","新年":"New Year","春节":"Chinese New Year","情人节":"Valentine's Day","母亲节":"Mother's Day",
+  "父亲节":"Father's Day","万圣节氛围":"Halloween atmosphere","节日氛围":"festive atmosphere","黑色星期五":"Black Friday",
+  "南瓜":"pumpkin","南瓜灯":"jack-o-lantern","蝙蝠":"bats","幽灵":"ghosts","蜘蛛网":"spider webs","骷髅":"skulls",
+  "糖果":"candy","女巫":"witch","元素":"elements","主题":"theme","装饰":"decorations","背景元素":"background elements",
+  "雪花":"snowflakes","圣诞树":"Christmas tree","彩灯":"string lights","礼盒":"gift boxes","气球":"balloons","彩带":"streamers",
+  "烟花":"fireworks","樱花":"cherry blossoms","秋天":"autumn","秋季":"autumn","夏天":"summer","冬天":"winter","春天":"spring",
+  "海边":"beach","户外":"outdoors","森林":"forest","派对":"party","复古":"vintage","赛博朋克":"cyberpunk","ins风格":"Instagram aesthetic",
+  // 动词 / 颜色 / 常见连接词（减少拼音残留）
+  "出现":"feature","要求":"require","要有":"include","出现在":"appear in","加入":"add","融入":"incorporate","搭配":"paired with",
+  "红色":"red","蓝色":"blue","绿色":"green","黄色":"yellow","粉色":"pink","白色":"white","黑色":"black","金色":"gold","银色":"silver","紫色":"purple","橙色":"orange",
+  "喜庆":"festive and joyful","可爱":"cute","酷":"cool","简洁":"clean and simple","明快":"bright and lively","温馨":"cozy and warm",
+  // ===== 电商视频生产关键词大全 =====
+  // A) 视频类型 / 形式
+  "种草视频":"product recommendation video","带货视频":"shoppable video","测评":"product review","测评视频":"review video",
+  "开箱视频":"unboxing video","教程视频":"tutorial video","使用教程":"how-to tutorial","好物分享":"product sharing",
+  "对比测评":"comparison review","买家秀":"customer showcase","卖家秀":"brand showcase","口碑视频":"testimonial video",
+  "直播切片":"livestream clip","短视频":"short video","信息流广告":"in-feed ad","贴片广告":"pre-roll ad",
+  "宣传片":"promo video","品牌片":"brand film","产品介绍":"product intro","上新视频":"new arrival video",
+  "促销视频":"promotional video","节日营销":"holiday campaign","种草":"product seeding","拔草":"purchase decision",
+  // B) 脚本结构 / 叙事
+  "钩子":"hook","开场":"opening","痛点":"pain point","痛点切入":"pain-point opening","解决方案":"solution",
+  "卖点":"selling point","核心卖点":"key selling point","利益点":"benefit","场景化":"scenario-based",
+  "故事线":"storyline","剧情":"plot","反转":"plot twist","悬念":"suspense","行动号召":"call to action",
+  "引导下单":"drive purchase","结尾":"ending","总结":"summary","旁白":"narration","脚本":"script",
+  "分镜":"storyboard","分镜脚本":"shot-by-shot script","台词":"dialogue","金句":"punchline",
+  // C) 镜头语言 / 运镜
+  "特写":"close-up","大特写":"extreme close-up","空镜":"establishing shot","主观镜头":"POV shot","第一视角":"first-person view",
+  "跟拍":"tracking shot","摇镜":"pan shot","升降镜头":"crane shot","延时":"time-lapse","延时摄影":"time-lapse",
+  "定格":"freeze frame","景深":"depth of field","浅景深":"shallow depth of field","虚化":"bokeh","聚焦":"focus pull",
+  "广角":"wide-angle","长焦":"telephoto","稳定器":"gimbal","三脚架":"tripod","运镜流畅":"smooth camera movement",
+  // D) 灯光 / 画面 / 调色
+  "打光":"lighting","主光":"key light","补光":"fill light","轮廓光":"rim light","顶光":"top light","侧光":"side light",
+  "硬光":"hard light","柔光箱":"softbox","环形灯":"ring light","影棚":"studio","纯色背景":"solid color backdrop",
+  "白底":"white background","场景搭建":"set design","调色":"color grading","高饱和":"high saturation","低饱和":"low saturation",
+  "莫兰迪色":"Morandi tones","马卡龙色":"macaron colors","原木风":"natural wood aesthetic","奶油风":"creamy aesthetic","高级灰":"sophisticated gray",
+  // E) 音频 / 节奏
+  "卡点":"beat-synced","卡点剪辑":"beat-synced editing","音效":"sound effects","白噪音":"white noise","环境音":"ambient sound",
+  "踩点":"on-beat","快节奏":"fast-paced","慢节奏":"slow-paced","BGM":"background music","原声":"original sound",
+  "解说":"voiceover narration","真人解说":"real-person narration","AI配音":"AI voiceover",
+  // F) 平台 / 投放
+  "抖音":"Douyin","快手":"Kuaishou","小红书":"Xiaohongshu","视频号":"Channels","淘宝":"Taobao","天猫":"Tmall","拼多多":"Pinduoduo",
+  "亚马逊":"Amazon","独立站":"independent store","跨境":"cross-border","出海":"going global","海外市场":"overseas market",
+  "竖版":"vertical format","横版":"horizontal format","信息流":"in-feed","素材":"creative asset","广告素材":"ad creative",
+  // G) 转化 / 营销话术
+  "限时":"limited-time","秒杀":"flash sale","满减":"discount on orders over","优惠券":"coupon","下单":"place an order",
+  "加购":"add to cart","点击购买":"tap to buy","库存有限":"limited stock","爆款":"best-seller","回购":"repurchase",
+  "种草拔草":"recommend and convert","新品首发":"new launch","独家":"exclusive","赠品":"free gift","试用":"trial",
+  // H) 商品卖点常见维度
+  "材质":"material","做工":"craftsmanship","工艺":"workmanship","手感":"tactile feel","重量":"weight","尺寸":"size",
+  "容量":"capacity","续航能力":"battery life","防水防尘":"waterproof and dustproof","透气":"breathable","亲肤":"skin-friendly",
+  "无异味":"odorless","食品级":"food-grade","可降解":"biodegradable","安全无毒":"safe and non-toxic","一物多用":"multi-purpose",
+  "易清洁":"easy to clean","可折叠":"foldable","免安装":"no assembly required","即开即用":"ready to use","省空间":"space-saving",
+  // I) 模特 / 人物 / 演绎
+  "模特":"model","出镜模特":"on-camera model","素人":"everyday person","达人":"influencer","博主":"creator",
+  "情侣出镜":"couple on camera","亲子":"parent-child","宠物出镜":"pet on camera","表情":"facial expression",
+  "情绪":"emotion","互动":"interaction","试穿":"try-on","试用展示":"hands-on demo","上身效果":"on-body look","上脚效果":"on-foot look",
+  // J) 补漏：高频电商视频生产词
+  "主播":"host","主持人":"presenter","口播":"talking-head narration","真人讲解":"live person explainer",
+  "构图":"composition","景别":"shot size","机位":"camera position","运镜":"camera movement","空镜":"establishing shot",
+  "封面":"cover image","首帧":"first frame","片头":"intro","片尾":"outro","字幕条":"caption bar","贴纸":"sticker",
+  "引流":"traffic acquisition","导流":"drive traffic","引流款":"traffic driver product","复购":"repeat purchase",
+  "复购率":"repeat purchase rate","客单价":"average order value","转化率":"conversion rate","点击率":"click-through rate",
+  "完播率":"completion rate","停留时长":"watch time","曝光":"impressions","流量":"traffic","算法推荐":"algorithm recommendation",
+  "种草":"product seeding","拔草":"convert to purchase","带货":"sell products","直播带货":"live commerce","短视频带货":"short-video commerce",
+  "脚本":"script","文案":"copywriting","台词":"lines","旁白":"voiceover","解说":"narration","口号":"slogan","标题":"title",
+  "卖货":"selling","促单":"prompt purchase","逼单":"close the sale","痛点场景":"pain point scenario","使用场景":"usage scenario",
+  "对比":"comparison","对比实验":"comparison test","前后对比":"before-and-after","效果展示":"results showcase","细节展示":"detail showcase",
+  "功能演示":"feature demo","操作演示":"how-to demo","步骤":"steps","教程":"tutorial","干货":"practical tips",
+  "氛围感":"atmosphere","质感":"texture and quality","高级感":"premium feel","松弛感":"relaxed vibe","沉浸感":"immersive feel",
+  "颜值":"good looks","出片":"photogenic result","出大片":"cinematic result","好物":"great find","好物推荐":"great-find recommendation",
+  "测款":"product testing","选品":"product selection","上架":"list product","清仓":"clearance","促销":"promotion",
+  "节日营销":"holiday marketing","节点":"sales event","大促":"major sale","双十一":"Double 11","黑五":"Black Friday","促销活动":"promo campaign",
+  "礼盒装":"gift box set","组合装":"bundle","买一送一":"buy one get one free","满赠":"free gift with purchase","折扣":"discount",
+  "真实测评":"honest review","亲测":"personally tested","实拍":"real footage","无滤镜":"no filter","原相机":"raw camera",
+  "出镜":"appear on camera","真人出镜":"real person on camera","不出镜":"faceless","手部出镜":"hands-only",
+  "节奏感":"sense of rhythm","快节奏":"fast-paced","慢节奏":"slow-paced","转场流畅":"smooth transitions","剪辑":"editing","剪辑节奏":"editing rhythm"
+};
+// 拼音兜底表（声母+韵母，简化覆盖；未命中的字逐字转拼音，确保无中文残留）
+const PINYIN = {"啊":"a","爱":"ai","安":"an","白":"bai","包":"bao","杯":"bei","本":"ben","便":"bian","表":"biao","茶":"cha","产":"chan","充":"chong","出":"chu","创":"chuang","大":"da","袋":"dai","灯":"deng","店":"dian","定":"ding","东":"dong","对":"dui","儿":"er","发":"fa","防":"fang","风":"feng","服":"fu","high":"high","给":"gei","工":"gong","购":"gou","光":"guang","贵":"gui","国":"guo","好":"hao","盒":"he","红":"hong","花":"hua","环":"huan","机":"ji","加":"jia","价":"jia","简":"jian","健":"jian","解":"jie","金":"jin","具":"ju","卷":"juan","康":"kang","売":"ke","壳":"ke","空":"kong","口":"kou","快":"kuai","款":"kuan","蜡":"la","乐":"le","礼":"li","料":"liao","量":"liang","亮":"liang","料":"liao","卖":"mai","美":"mei","面":"mian","明":"ming","摩":"mo","耐":"nai","男":"nan","女":"nv","暖":"nuan","派":"pai","品":"pin","瓶":"ping","气":"qi","钱":"qian","巧":"qiao","轻":"qing","情":"qing","球":"qiu","群":"qun","热":"re","人":"ren","软":"ruan","色":"se","上":"shang","少":"shao","身":"shen","声":"sheng","时":"shi","示":"shi","收":"shou","水":"shui","送":"song","素":"su","糖":"tang","套":"tao","特":"te","体":"ti","贴":"tie","图":"tu","外":"wai","碗":"wan","网":"wang","味":"wei","温":"wen","屋":"wu","物":"wu","系":"xi","鲜":"xian","香":"xiang","橡":"xiang","小":"xiao","新":"xin","型":"xing","熊":"xiong","学":"xue","颜":"yan","样":"yang","耀":"yao","业":"ye","衣":"yi","音":"yin","用":"yong","优":"you","鱼":"yu","元":"yuan","运":"yun","在":"zai","赞":"zan","展":"zhan","展":"zhan","真":"zhen","正":"zheng","质":"zhi","智":"zhi","中":"zhong","装":"zhuang","桌":"zhuo","自":"zi","族":"zu","组":"zu","嘴":"zui","慢":"man","推":"tui","拉":"la","绕":"rao","稳":"wen","清":"qing","简":"jian","活":"huo","亮":"liang","景":"jing","镜":"jing","拍":"pai","场":"chang","氛":"fen","围":"wei","治":"zhi","愈":"yu","细":"xi","节":"jie","纹":"wen","理":"li","影":"ying","效":"xiao","果":"guo","感":"gan","调":"diao","冷":"leng","逆":"ni","俯":"fu","仰":"yang"};
+
+function cnToPinyin(str){
+  let out="";
+  for(const ch of str){
+    if(/[一-龥]/.test(ch)){ out += (PINYIN[ch]||"")+" "; }
+    else out += ch;
+  }
+  return out.replace(/\s+/g," ").trim();
+}
+// 把含中文的文本翻译成英文：先整体/分段查词典；词典未命中的词【保留原中文】，不强行转拼音
+function toEnglish(raw){
+  if(!raw) return "";
+  let s=raw.trim();
+  if(!/[一-龥]/.test(s)) { return asciiClean(s); } // 已是英文/无中文
+  // 1) 整句命中
+  if(CN_DICT[s]) return CN_DICT[s];
+  // 2) 词典分段替换（长词优先）；命中的替换成英文，未命中的中文原样保留
+  const keys=Object.keys(CN_DICT).sort((a,b)=>b.length-a.length);
+  for(const k of keys){ if(s.includes(k)) s=s.split(k).join(" "+CN_DICT[k]+" "); }
+  // 3) 不再转拼音、不再删除剩余中文 —— 词典里没有的词原样保留中文
+  return asciiClean(s);
+}
+// 净化：移除 emoji / 杂项符号等噪声，并把常见全角标点转半角；但【保留中文】（词典未命中的词需原样留存）
+function asciiClean(s){
+  return s
+    .replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2190}-\u{21FF}\u{2B00}-\u{2BFF}\u{FE00}-\u{FE0F}]/gu,"") // emoji / 箭头 / 杂项符号 / 变体选择符
+    .replace(/[！-～]/g, c=>String.fromCharCode(c.charCodeAt(0)-0xFEE0)) // 全角ASCII→半角
+    .replace(/[　、。，：；（）《》“”‘’]/g, m=>({"　":" ","、":", ","。":". ","，":", ","：":": ","；":"; ","（":" (","）":") ","《":"","》":"","“":'"',"”":'"',"‘":"'","’":"'"}[m]||"")) // 中文标点→英文
+    .replace(/[ \t]{2,}/g," ")
+    .replace(/\s+([,.;:!?])/g,"$1")
+    .trim();
+}
+/* 优雅截断：不超过 max 字符，尽量在句末/词边界收尾，超出加省略号 */
+function clip(s, max){
+  s=(s||"").trim();
+  if(s.length<=max) return s;
+  let cut=s.slice(0,max);
+  // 优先在最后一个句末标点处断开
+  let p=Math.max(cut.lastIndexOf(". "),cut.lastIndexOf("; "),cut.lastIndexOf("! "),cut.lastIndexOf("? "));
+  if(p> max*0.5){ return cut.slice(0,p+1).trim(); }
+  // 否则在最后一个空格处断开，避免切断单词
+  let sp=cut.lastIndexOf(" ");
+  if(sp> max*0.5) cut=cut.slice(0,sp);
+  return cut.trim().replace(/[,;:\-]$/,"")+"...";
+}
+
+// 行感知截断：保留多行结构(每行完整)，总长不超 max；含 keep 的行必留，超预算时丢弃靠后的非关键行
+function clipLines(s, max, keep){
+  // 行感知截断：整行保留或整行删除，绝不把句子削成半句省略号。
+  // 核心行(Hook/Scene/Subject/Creative notes/On-screen text/含keep的行)永远保留；
+  // 可选行(Lighting/Camera/Shot transition/Audio/说明行)在超长时按优先级整行丢弃。
+  s=(s||"").trim(); keep=(keep||"").trim();
+  if(s.length<=max) return s;
+  let lines=s.split("\n");
+  // 行优先级：数字越大越先被丢弃；0=核心必留
+  const droppable=[
+    /^\(Non-English wording/i, // 说明行最先丢
+    /^Shot transition/i,
+    /^Camera movement/i,
+    /^Audio \/ Voiceover/i,
+    /^Lighting/i
+  ];
+  const isCore=(ln)=> (keep && ln.includes(keep)) ||
+    /^Hook|^Scene setup|^Subject|^Creative notes|^On-screen text/i.test(ln);
+  const total=(arr)=> arr.reduce((a,l)=>a+l.length,0)+(arr.length>0?arr.length-1:0);
+  // 逐条优先级，整行删除可选行直到达标
+  for(const pat of droppable){
+    if(total(lines)<=max) break;
+    lines=lines.filter(ln=> isCore(ln) || !pat.test(ln));
+  }
+  let r=lines.join("\n");
+  // 仍超长：只能对最长的“非核心”行做整句级 clip（句界优先，不留半句）
+  let guard=0;
+  while(r.length>max && guard++<200){
+    let arr=r.split("\n"), bi=-1, bl=-1;
+    for(let i=0;i<arr.length;i++){ if(isCore(arr[i])) continue; if(arr[i].length>bl){bl=arr[i].length;bi=i;} }
+    if(bi<0) break;
+    arr[bi]=clip(arr[bi], Math.max(20, bl-Math.max(10, r.length-max)));
+    r=arr.join("\n");
+  }
+  if(r.length>max) r=clipKeep(r,max,keep); // 极端兜底(保住用户备注)
+  return r;
+}
+
+// 受保护截断：保证 keep 片段（用户备注）一定保留在结果中
+function clipKeep(s, max, keep){
+  s=(s||"").trim();
+  keep=(keep||"").trim();
+  if(s.length<=max) return s;
+  if(!keep) return clip(s,max);
+  let idx=s.indexOf(keep);
+  if(idx<0) return clip(s,max);
+  // keep 自身就超限：单独截断 keep 并直接返回
+  if(keep.length>=max-3) return clip(keep,max);
+  // 先尝试只压缩 keep 之前的部分（head），保留 keep 及其后内容
+  let tail=s.slice(idx); // 含 keep 起始到结尾
+  let headBudget=max-tail.length;
+  if(headBudget> 20){
+    let head=clip(s.slice(0,idx), headBudget);
+    let combined=(head+" "+tail).trim();
+    if(combined.length<=max) return combined;
+  }
+  // head 空间不足：保 keep，剩余给 keep 之前的简短前缀
+  let prefixBudget=Math.max(0, max-keep.length-4);
+  let prefix=prefixBudget>10? clip(s.slice(0,idx), prefixBudget).replace(/\.\.\.$/,"")+" " : "";
+  return (prefix+keep).trim().slice(0,max);
+}
+
+/* ============ State ============ */
+const state = { cat:"", style:"", len:"15s", ratio:"9:16", cnt:3 };
+
+/* ============ Build UI ============ */
+function chip(text){ const e=document.createElement('div'); e.className='chip'; e.textContent=text; return e; }
+
+const catChips=document.getElementById('catChips');
+CAT_PRESETS.forEach(c=>{
+  const e=chip(c.cn);          // 按钮显示中文
+  e.dataset.en=c.en;           // 取值用英文
+  e.onclick=()=>{ document.getElementById('cat').value=c.en; state.cat=c.en; markCatChips(); };
+  catChips.appendChild(e);
+});
+function markCatChips(){
+  const v=document.getElementById('cat').value.trim().toLowerCase();
+  [...catChips.children].forEach(ch=>ch.classList.toggle('sel', (ch.dataset.en||'').toLowerCase()===v));
+}
+document.getElementById('cat').addEventListener('input',e=>{ state.cat=e.target.value.trim(); markCatChips(); });
+
+const styleGrid=document.getElementById('styleGrid');
+STYLES.forEach(s=>{
+  const e=document.createElement('div'); e.className='opt';
+  e.innerHTML=`<div class="t">${s.t}</div><div class="d">${s.d}</div>`;
+  e.onclick=()=>{ const on=state.style===s.k; state.style=on?"":s.k; [...styleGrid.children].forEach(c=>c.classList.remove('sel')); if(!on)e.classList.add('sel'); };
+  styleGrid.appendChild(e);
+});
+
+function buildNum(elId, arr, key, fmt){
+  const box=document.getElementById(elId);
+  arr.forEach(v=>{
+    const e=document.createElement('div'); e.className='num'+(state[key]==v?' sel':''); e.textContent=fmt?fmt(v):v;
+    e.onclick=()=>{ state[key]=v; [...box.children].forEach(c=>c.classList.remove('sel')); e.classList.add('sel'); };
+    box.appendChild(e);
+  });
+}
+buildNum('lenPick',LENGTHS,'len');
+buildNum('ratioPick',RATIOS,'ratio');
+buildNum('cntPick',COUNTS,'cnt', v=>v+' 条');
+
+/* ============ Script Generation ============ */
+function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
+function pick(arr,i){ return arr[i%arr.length]; }
+
+// Hook lines (variant openers)
+const HOOKS = [
+  p=>`POV: you finally found the ${p} that actually does the job.`,
+  p=>`Stop scrolling — this ${p} is the upgrade you didn't know you needed.`,
+  p=>`I tested 5 ${p}s so you don't have to. This one wins.`,
+  p=>`Why is nobody talking about this ${p}?`,
+  p=>`3 reasons this ${p} sold out last week 👇`,
+  p=>`If you use a ${p} every day, watch this first.`
+];
+const CTAS = [
+  "Tap the cart before it's gone.",
+  "Link in bio — limited stock today.",
+  "Add to cart and thank yourself later.",
+  "Order now, your future self will love it.",
+  "Don't miss the launch price — shop now."
+];
+
+// Approx scene count by length
+function sceneCount(len){ const n=parseInt(len); if(n<=9)return 3; if(n<=15)return 4; if(n<=21)return 5; return 6; }
+
+// Scene templates per style
+function buildScenes(prod, style, len, audience, usp){
+  const n=sceneCount(len);
+  const per=Math.max(2, Math.round(parseInt(len)/n));
+  const aud = audience? ` for ${audience}` : "";
+  const point = usp? usp : "its standout feature";
+  const lib = {
+    ugc:[
+      `Real person holds the ${prod} up to camera, casual room, natural light. They look slightly surprised.`,
+      `Quick handheld close-up of the ${prod} in everyday use${aud}.`,
+      `Reaction shot: genuine smile / nod showing ${point} works.`,
+      `Show the ${prod} from a second angle, highlight texture and detail.`,
+      `Before/after or "expectation vs reality" beat about the ${prod}.`,
+      `Person points to product, encouraging gesture toward the camera.`
+    ],
+    premium:[
+      `Slow dolly-in on the ${prod} on a clean surface, soft key light, dark elegant background.`,
+      `Macro rotate of the ${prod}, light glides across the surface revealing ${point}.`,
+      `Lifestyle wide: the ${prod} placed in a tasteful, aspirational setting${aud}.`,
+      `Hand gracefully interacts with the ${prod}, shallow depth of field.`,
+      `Hero beauty shot of the ${prod}, subtle light flare, premium mood.`,
+      `Logo / packaging reveal with refined motion and negative space.`
+    ],
+    energetic:[
+      `Snap zoom onto the ${prod} with a punchy sound effect, bright background.`,
+      `Rapid montage of the ${prod} in 3 quick uses${aud}.`,
+      `Fast text-pop overlay calling out ${point}.`,
+      `Whip-pan transition to a satisfying product action.`,
+      `Energetic reaction + thumbs up, vibrant color grade.`,
+      `Final freeze-frame on the ${prod} with bold CTA text.`
+    ],
+    asmr:[
+      `Extreme close-up of the ${prod}, crisp tactile sound as it's picked up.`,
+      `Slow satisfying motion: opening / using the ${prod}, isolated sound design.`,
+      `Macro detail of texture and material quality showing ${point}.`,
+      `Gentle hands move the ${prod}, soft ambient audio${aud}.`,
+      `Trickle / pour / click sensory moment with the ${prod}.`,
+      `Calm resting shot of the ${prod}, breathy fade-out.`
+    ],
+    funny:[
+      `Relatable "problem" moment without the ${prod} — mild frustration, comedic timing.`,
+      `Beat drop: the ${prod} appears as the hero solution.`,
+      `Exaggerated happy reaction once they try the ${prod}${aud}.`,
+      `Quick gag highlighting ${point} in an over-the-top way.`,
+      `Friend/partner reacts jealously to the ${prod}.`,
+      `Cheeky direct-to-camera line + CTA.`
+    ],
+    tutorial:[
+      `On-screen title: "How to use the ${prod} in ${n} steps". Product on table.`,
+      `Step 1 close-up demo of setting up / opening the ${prod}.`,
+      `Step 2 showing the ${prod} in action, emphasize ${point}${aud}.`,
+      `Step 3 result shot — the clear benefit/outcome.`,
+      `Tip overlay with a pro usage trick for the ${prod}.`,
+      `Recap shot + CTA to buy the ${prod}.`
+    ]
+  };
+  const scenes=lib[style]||lib.ugc;
+  let out=[]; let t=0;
+  for(let i=0;i<n;i++){ const dur=(i===n-1)?(parseInt(len)-t):per; out.push({i:i+1, start:t, dur:Math.max(1,dur), desc:scenes[i%scenes.length]}); t+=per; }
+  return out;
+}
+
+function buildScript(prod, idx){
+  const style = state.style || pick(["ugc","energetic","premium","asmr"], idx);
+  // 所有用户输入先翻译成英文，确保脚本无中文
+  // 用户填写的三个字段(目标人群/卖点钩子/额外备注)不翻译，原样保留(中文保持中文，英文保持英文)
+  // 只做净化(去 emoji/全角符号)，避免出现"大学生→大students"这种半翻译
+  const audience = asciiClean(document.getElementById('audience').value.trim());
+  const usp = asciiClean(document.getElementById('usp').value.trim());
+  const notes = asciiClean(document.getElementById('notes').value.trim());
+  const len=state.len, ratio=state.ratio;
+  // 字幕/口播专用的"纯英文产品名"：删除中文后若为空则回退为 "product"，确保渲染到字幕/口播的内容绝无中文
+  const prodSafe = (function(){
+    const en = asciiClean(prod).replace(/[一-鿿]/g,"").replace(/\s{2,}/g," ").trim();
+    return en.length>=2 ? en : "product";
+  })();
+  const scenes=buildScenes(prod, style, len, audience, usp);
+  const hook=asciiClean(HOOKS[idx%HOOKS.length](prodSafe));
+  const cta=asciiClean(CTAS[idx%CTAS.length]);
+  const styleDesc=STYLE_DESC[style];
+
+  // 时长拆成三段时间码用于 prompt
+  const total=parseInt(len);
+  const sc1=Math.max(2,Math.round(total*0.2));
+  const sc2=Math.max(2,Math.round(total*0.45));
+
+  const audPhrase = audience? ` Tailored for ${audience}.` : "";
+  const uspPhrase = usp? usp : "its standout features and everyday usage scenarios";
+  const moodMap={ugc:"authentic, relatable",premium:"elegant, aspirational",energetic:"high-energy, trendy",asmr:"calm, sensory and satisfying",funny:"playful and humorous",tutorial:"clear and instructional"};
+  const lightMap={
+    ugc:"Natural daylight, soft and even, true-to-life colors.",
+    premium:"Soft directional key light, dark elegant backdrop, gentle highlights along edges.",
+    energetic:"Bright punchy lighting with vibrant color grade.",
+    asmr:"Low-angle soft lighting to accentuate textures and sharp edges.",
+    funny:"Bright, friendly lighting with a casual everyday feel.",
+    tutorial:"Clean, evenly lit setup so every step reads clearly."
+  };
+  const camMap={
+    ugc:"Handheld, casual framing with quick reframes.",
+    premium:"Slow cinematic dolly-in and macro rotations with shallow depth of field.",
+    energetic:"Snap zooms and fast whip-pans, trendy block cut editing.",
+    asmr:"Trendy block cut editing; slow macro glides with shallow depth of field.",
+    funny:"Dynamic handheld with comedic timing on the cuts.",
+    tutorial:"Stable locked-off shots with clean push-ins on key steps."
+  };
+  const transMap={
+    ugc:"Quick straight cuts matched to the talking rhythm.",
+    premium:"Smooth dissolves and elegant match cuts.",
+    energetic:"Beat-synced hard cuts and swipe transitions.",
+    asmr:"Gentle cross dissolves synced to audio cues for scene cuts.",
+    funny:"Punchy cuts timed to the joke beats.",
+    tutorial:"Simple cuts between numbered steps."
+  };
+
+  // 分镜文本（Shot list）
+  const shots = scenes.map(s=>`Scene ${s.i} (${s.start}-${s.start+s.dur}s): ${s.desc}`).join("\n");
+
+  // 结构化脚本（参考模板格式）
+  // 用户备注作为受保护片段，放在结构化模板靠前位置，确保一定出现
+  const notesLine = notes? `\nCreative notes (must follow): ${notes}.` : "";
+  const structured =
+`Hook (spoken line, English only): ${hook} Open with a striking 1-2s visual that puts the ${prodSafe} front and center.
+Scene setup: Minimalist ${prod} showcase styled for TikTok-style product videos, ${moodMap[style]} visual tone; creator's hands optional.
+Subject and product focus: Position the ${prod} as the central focal point. Highlight ${uspPhrase} without overhyped or exaggerated claims.${audPhrase}${notesLine}
+(Non-English wording here describes scene content only - never render it as captions/subtitles or speak it; all captions and voiceover stay English-only.)
+Lighting: ${lightMap[style]}
+Camera movement: ${camMap[style]}
+Shot transition: ${transMap[style]}
+Audio / Voiceover: Natural, unforced English voiceover with tight, snappy pacing, delivered in an authentic creator tone. Voiceover and audio MUST be in English only.
+On-screen text (English only): "${cta}"`;
+
+  // Voiceover / captions —— 会被即梦直接渲染成口播/字幕，必须全英文，绝不拼接中文(usp/notes)
+  const vo = [
+    `[0s] HOOK (spoken in English): "${hook}"`,
+    `[mid] VALUE (spoken in English): "Here's why people love this ${prodSafe}."`,
+    `[end] CTA (spoken in English): "${cta}"`
+  ].join("\n");
+
+  // Full production prompt（参考模板的成片 prompt）
+  // 用户备注前置到产品描述之后，确保不被尾部截断丢弃
+  const noteStr = notes? ` Additional requirements that must be respected: ${notes}.` : "";
+  // 固定头部：UGC 风格 + 语言锁，永远完整保留（不参与截断）
+  const lockPrefix = `STYLE: authentic real-user UGC sharing style - shot like a genuine everyday customer casually sharing on their phone, natural and relatable, not like a polished commercial. LANGUAGE LOCK: every on-screen text, caption, subtitle and all voiceover/narration MUST be in English only - never output Chinese or any non-English text on screen or in audio. `;
+  const promptBody =
+`Produce a ${len} vertical ${ratio} TikTok-style product video for "${prodSafe}"${prodSafe!==prod? ` (the product shown is: ${prod})` : ""}.${noteStr} The video should feel ${moodMap[style]} and be optimized for short-form social product showcases. Open with a striking visual hook that clearly features the product within the first ${sc1} seconds, then progress through concise sequences: an eye-catching opening clip (0-${sc1}s), a close-up detail shot of the product (${sc1}-${sc2}s), and a final hero feature shot (${sc2}-${total}s). Visual style: ${styleDesc}.${audPhrase} Emphasize ${uspPhrase}. ${lightMap[style]} ${camMap[style]} ${transMap[style]} Maintain clean framing, realistic product rendering, and pacing tailored for short-form social media. Pair with an unforced, natural English voiceover in a genuine creator rhythm. Any non-English words above describe scene content only and must never appear as on-screen text, captions or spoken words. Add brief English on-screen text only when it enhances viewer comprehension.`;
+
+  // Negative constraints（精简版，参考模板）
+  // 强制：所有字幕/画面文字/口播/配音必须为英文，禁止生成中文或任何非英文文字
+  const negatives = "ALL on-screen text, captions, subtitles, titles and any visible writing MUST be in English only. ALL voiceover, narration and spoken audio MUST be in English only. Absolutely NO Chinese characters and no text in any language other than English anywhere in the video. Any non-English wording in this brief is only a content description for the scene, never text to render on screen. No pricing claims, no brand/trademark violations, no distorted hands or warped product shapes, no illegible or cluttered visuals, no irrelevant props, no unrealistic claims.";
+
+  // 全部字段统一净化 + 截断，确保无中文且单条脚本不超过 2000 字符
+  // 用户备注（notes）作为受保护片段，截断时优先保留
+  const keepNote = asciiClean(notes);
+  const out_struct = clipLines(asciiClean(structured), 950, keepNote);
+  const out_shots  = clip(asciiClean(shots), 430);
+  const out_vo     = clip(asciiClean(vo), 200);
+  // 固定前缀(UGC风格+语言锁)永远完整保留；只截 body，再拼回前缀
+  const cleanPrefix = asciiClean(lockPrefix);
+  const bodyBudget = Math.max(120, 830 - cleanPrefix.length);
+  const out_prompt = cleanPrefix + clipKeep(asciiClean(promptBody), bodyBudget, keepNote? `Additional requirements that must be respected: ${keepNote}.` : "");
+  const out_neg    = clip(asciiClean(negatives), 380);
+  return {
+    style, len, ratio,
+    shots: out_shots,
+    structured: out_struct,
+    vo: out_vo,
+    prompt: out_prompt,
+    negatives: out_neg,
+    keepNote: keepNote,
+    keepPrompt: keepNote? `Additional requirements that must be respected: ${keepNote}.` : "",
+    lockPrefix: cleanPrefix
+  };
+}
+
+function escapeHtml(s){ return s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+
+function generate(){
+  const rawProd = document.getElementById('cat').value.trim();
+  if(!rawProd){ alert("请先填写商品品类（第 1 步）。"); document.getElementById('cat').focus(); return; }
+  const prod = toEnglish(rawProd);   // 商品名翻译成英文，确保脚本无中文
+  if(!prod){ alert("无法识别该品类，请改用英文或更常见的中文品类名。"); return; }
+
+  // 风格英文名映射（用于英文脚本输出，与 UI 中文标签解耦）
+  const STYLE_EN = {ugc:"UGC / Authentic",premium:"Premium / Luxe",energetic:"Energetic / Fast",asmr:"ASMR / Sensory",funny:"Funny / Skit",tutorial:"How-to / Demo"};
+
+  const out=document.getElementById('out');
+  out.innerHTML="";
+  for(let i=0;i<state.cnt;i++){
+    const sc=buildScript(prod, i);
+    const styleName=(STYLES.find(s=>s.k===sc.style)||{t:sc.style}).t;   // 中文，用于 UI 徽章
+    const styleNameEn=STYLE_EN[sc.style]||sc.style;                     // 英文，用于复制内容
+    const box=document.createElement('div'); box.className='vbox';
+    const header=`=== JIMENG VIDEO SCRIPT: ${prod} (Variant ${i+1} - ${styleNameEn}) ===\nLength: ${sc.len} | Ratio: ${sc.ratio}`;
+    function compose(s){
+      return `${header}
+
+[SCRIPT TEMPLATE]
+${s.structured}
+
+[SHOT LIST]
+${s.shots}
+
+[VOICEOVER / CAPTIONS]
+${s.vo}
+
+[FULL PRODUCTION PROMPT]
+${s.prompt}
+
+[NEGATIVE CONSTRAINTS]
+${s.negatives}`;
+    }
+    // 总长兜底：单条脚本不超过 2000 字符。
+    // 压缩顺序(由次要到核心)：shots → negatives → prompt body → 最后才动 structured。
+    // structured 是用户最先看的脚本模板，整行取舍、绝不削成半句省略号。
+    let copyText=compose(sc);
+    if(copyText.length>2000){
+      const over=copyText.length-2000;
+      sc.shots=clip(sc.shots, Math.max(120, sc.shots.length-over-3));
+      copyText=compose(sc);
+    }
+    if(copyText.length>2000){
+      const over=copyText.length-2000;
+      sc.negatives=clip(sc.negatives, Math.max(120, sc.negatives.length-over-3));
+      copyText=compose(sc);
+    }
+    if(copyText.length>2000){
+      const over=copyText.length-2000;
+      // 压缩 prompt 时保护固定前缀(UGC风格+语言锁)：剥离→压body→拼回
+      const pfx=sc.lockPrefix||"";
+      const body=pfx && sc.prompt.startsWith(pfx)? sc.prompt.slice(pfx.length) : sc.prompt;
+      const newBody=clipKeep(body, Math.max(120, body.length-over-3), sc.keepPrompt);
+      sc.prompt=(pfx && sc.prompt.startsWith(pfx)? pfx : "")+newBody;
+      copyText=compose(sc);
+    }
+    if(copyText.length>2000){
+      const over=copyText.length-2000;
+      sc.structured=clipLines(sc.structured, Math.max(200, sc.structured.length-over-3), sc.keepNote);
+      copyText=compose(sc);
+    }
+    box.innerHTML=`
+      <div class="vhead">
+        <div class="vt">变体 ${i+1} <span class="badge">${styleName}</span> <span style="color:var(--sub);font-weight:600;font-size:11px;">${sc.len} · ${sc.ratio} · ${copyText.length}/2000 字符</span></div>
+        <button class="cp">复制全部</button>
+      </div>
+      <div class="vlbl">Script Template</div>
+      <div class="vp">${escapeHtml(sc.structured)}</div>
+      <div class="vlbl">Shot List</div>
+      <div class="vp">${escapeHtml(sc.shots)}</div>
+      <div class="vlbl">Voiceover / Captions</div>
+      <div class="vp">${escapeHtml(sc.vo)}</div>
+      <div class="vlbl">Full Production Prompt</div>
+      <div class="vp mono">${escapeHtml(sc.prompt)}</div>
+      <div class="vlbl">Negative Constraints</div>
+      <div class="vp">${escapeHtml(sc.negatives)}</div>`;
+    const btn=box.querySelector('.cp');
+    btn.onclick=()=>{ navigator.clipboard.writeText(copyText).then(()=>{ btn.textContent="已复制 ✓"; btn.classList.add('done'); setTimeout(()=>{btn.textContent="复制全部"; btn.classList.remove('done');},1600); }); };
+    out.appendChild(box);
+  }
+  out.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function resetAll(){
+  document.getElementById('cat').value="";
+  document.getElementById('audience').value="";
+  document.getElementById('usp').value="";
+  document.getElementById('notes').value="";
+  state.cat=""; state.style=""; state.len="15s"; state.ratio="9:16"; state.cnt=3;
+  markCatChips();
+  [...styleGrid.children].forEach(c=>c.classList.remove('sel'));
+  ['lenPick','ratioPick','cntPick'].forEach(id=>{
+    const box=document.getElementById(id);
+    [...box.children].forEach((c,i)=>{
+      const def = id==='lenPick'?(c.textContent==='15s') : id==='ratioPick'?(c.textContent==='9:16') : (c.textContent.startsWith('3'));
+      c.classList.toggle('sel', def);
+    });
+  });
+  document.getElementById('out').innerHTML='<div class="out-empty">点击下方「生成脚本」后，结果将显示在这里。</div>';
+}
+</script>
+</body>
+</html>
